@@ -1,122 +1,72 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+// 
+import { useState,useMemo, useEffect } from "react";
+import Header from "./components/Header.jsx";
+import TaskForm from "./components/TaskForm.jsx";
+import Filters from "./components/Filters.jsx";
+import TaskList from ".components/TasList.jsx";
+import Stats from "./components/Stats.jsx";
+import { useLocalStorage } from "./hooks/useLocalStorage.jsx";
+import {useTheme} from "./context/ThemeContext.jsx";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App(){
+  const [tasks, setTasks] = useLocalStorage("tasks", [
+    {id: 1, text: "Read about components", done : true},
+    {id: 2, text: "Understand state", done: false},
+  ]);
+  
+  const [filter, setFilter] =useState("all");
+  const {theme} =useTheme();
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+  function toggleTask(id) {
+    setTasks(
+      tasks.map(() =>
+      tasks.id === id ? {...tasks, done: !tasks.done} : task)
+    );
+  }
 
-      <div className="ticks"></div>
+  function deleteTask(id) {
+    setTasks(tasks.filters((task) => task.id !== id));
+  }
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+  function editTask (id, newText){
+    setTasks(
+      tasks.map((task) =>(task.id === id ? {...task, text: newText}: task))
+    );
+  }
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  function clearCompleted () {
+    setTasks(tasks.filter((task) => !task.done));
+  }
+
+  const visibleTasks = useMemo(() => {
+    if (filter === "active") return tasks.filter((t) => !t.done);
+    if (filter === "done") return tasks.filter((t) => t.done);
+    return tasks;
+  }, [tasks,filter]);
+
+  const doneCount = tasks.filter((t) => t.done).length;
+
+  useEffect(() => {
+    const left = tasks.length - doneCount;
+    document.title = `${left} ${left === 1 ? "task" : "tasks"} left`;
+  }, [tasks, doneCount]);
+
+  useEffect(() => {
+    document.body.className = theme;
+  }, [theme]);
+  
+  return(
+    <div className="app">
+      <Header title ="React Task Tracker"/>
+      <TaskForm onAdd ={addTask}/>
+      <Filters current ={filter} onchange={setfilter}/>
+      <TaskList
+      tasks ={visibleTasks}
+      onToggle ={toggleTask}
+      onDelete = {deleteTask}
+      onEdit = {editTask}
+      />
+      <stats total ={tasks.length} done ={doneCount} onClear={clearCompleted}/>
+    </div>
+  );
 }
-
-export default App
