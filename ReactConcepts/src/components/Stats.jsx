@@ -1,11 +1,11 @@
 export default function Stats({total, done, onClear}) {
-  const percet = total === 0 ? 0: Math.round((done / total) * 100);
+  const percent = total === 0 ? 0: Math.round((done / total) * 100);
   
   return (
     <footer className="stats">
-      <P>
+      <p>
         {done} of {total} done ({percent}%)
-      </P>
+      </p>
 
       <div className="bar">
         <div className="fill" style={{width: `${percent}%`}}/>

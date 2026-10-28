@@ -2,7 +2,7 @@ import { useState } from "react";
 
 export default function TaskItem({task, onToggle, onDelete, onEdit}) {
   const [isEditing, setIsEditing] = useState(false);
-  const [draft, seDraft] = useState(task.text);
+  const [draft, setDraft] = useState(task.text);
 
   function save(){
     const clean = draft.trim();
@@ -31,7 +31,7 @@ export default function TaskItem({task, onToggle, onDelete, onEdit}) {
     )}
 
     {!isEditing && (
-      <buton className="danger" onClick={() => onDelete(task.id)}>Delete</buton>
+      <button className="danger" onClick={() => onDelete(task.id)}>Delete</button>
     )}
     </li>
   );
